@@ -1,0 +1,11 @@
+﻿{
+  "ConnectionStrings": {
+    "Production":
+      "Data Source=LFNSQLC03PR;Initial Catalog=alis_db_prod;Integrated Security=False;User ID=RAxelrad;Password=a18@4d182VmF;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+  },
+  "DistributionList": [
+    { "EmailAddress": "roni.axelrad@sapiens.com" },
+    { "EmailAddress": "eyal.bachmeir@sapiens.com" }
+  ]
+
+}
