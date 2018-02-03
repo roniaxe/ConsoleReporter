@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
@@ -12,7 +13,7 @@ namespace ReporterConsole.Utils
         public static string ExportDataSet(List<DataTable> dataTables)
         {
             var destination = $@"C:\DailyBatchReports\BatchesDailySummary_PROD_{DateTime.Today:M}.xlsx";
-            using (var workbook = SpreadsheetDocument.Create(destination, DocumentFormat.OpenXml.SpreadsheetDocumentType.Workbook))
+            using (var workbook = SpreadsheetDocument.Create(destination, SpreadsheetDocumentType.Workbook))
             {
                 var workbookPart = workbook.AddWorkbookPart();
 
@@ -20,33 +21,32 @@ namespace ReporterConsole.Utils
                 {
                     Sheets = new Sheets()
                 };
-
-                foreach (DataTable table in dataTables) {
-
+                uint sheetId = 1;
+                foreach (var table in dataTables)
+                {
                     var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
                     var sheetData = new SheetData();
                     sheetPart.Worksheet = new Worksheet(sheetData);
 
-                    Sheets sheets = workbook.WorkbookPart.Workbook.GetFirstChild<Sheets>();
-                    string relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
+                    var sheets = workbook.WorkbookPart.Workbook.GetFirstChild<Sheets>();
+                    var relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
 
-                    uint sheetId = 1;
+
                     if (sheets.Elements<Sheet>().Any())
-                    {
                         sheetId =
                             sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
-                    }
 
-                    Sheet sheet = new Sheet { Id = relationshipId, SheetId = sheetId, Name = table.TableName };
+                    var sheet = new Sheet {Id = relationshipId, SheetId = sheetId, Name = table.TableName};
                     sheets.Append(sheet);
 
-                    Row headerRow = new Row();
+                    var headerRow = new Row();
 
-                    List<String> columns = new List<string>();
-                    foreach (DataColumn column in table.Columns) {
+                    var columns = new List<string>();
+                    foreach (DataColumn column in table.Columns)
+                    {
                         columns.Add(column.ColumnName);
 
-                        Cell cell = new Cell
+                        var cell = new Cell
                         {
                             DataType = CellValues.String,
                             CellValue = new CellValue(column.ColumnName)
@@ -58,16 +58,15 @@ namespace ReporterConsole.Utils
                     sheetData.AppendChild(headerRow);
 
                     foreach (DataRow dsrow in table.Rows)
-                    {                       
-                        Row newRow = new Row();
-                        foreach (String col in columns)
+                    {
+                        var newRow = new Row();
+                        foreach (var col in columns)
                         {
-                            var type = GetTypeOf(dsrow[col]);
-                            Cell cell = new Cell
+                            //var type = GetTypeOf(dsrow[col]);
+                            var type = GetTypeOfCellValue(dsrow[col]);
+                            var cell = new Cell
                             {
-                                DataType = type == ValueType.String ? CellValues.String :
-                                type == ValueType.Integer ? CellValues.Number : 
-                                type == ValueType.Date ? CellValues.Date : CellValues.InlineString,
+                                DataType = type,
                                 CellValue = new CellValue(dsrow[col].ToString())
                             };
                             newRow.AppendChild(cell);
@@ -75,40 +74,36 @@ namespace ReporterConsole.Utils
 
                         sheetData.AppendChild(newRow);
                     }
-
                 }
             }
+
             return destination;
         }
 
-        private static ValueType? GetTypeOf(object value)
+        private static CellValues? GetTypeOfCellValue(object o)
         {
-            ValueType? typeOfValue = null;
-            if (value is string)
+            CellValues? returnType = null;
+            switch (o)
             {
-                typeOfValue = ValueType.String;
+                case int _:
+                    returnType = CellValues.Number;
+                    break;
+                case string _:
+                    returnType = CellValues.String;
+                    break;
+                case bool _:
+                    returnType = CellValues.Boolean;
+                    break;
+                case DateTime _:
+                    returnType = CellValues.Date;
+                    break;
             }
 
-            if (value is int)
-            {
-                typeOfValue = ValueType.Integer;
-            }
-
-            if (value is bool)
-            {
-                typeOfValue = ValueType.Boolean;
-            }
-
-            if (value is DateTime)
-            {
-                typeOfValue = ValueType.Date;
-            }
-
-            return typeOfValue;
+            return returnType;
         }
     }
 
-    enum ValueType
+    internal enum ValueType
     {
         String,
         Integer,

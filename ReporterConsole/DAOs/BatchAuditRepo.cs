@@ -12,7 +12,7 @@ namespace ReporterConsole.DAOs
     {
         public static async Task<IList<GroupedErrorsDTO>> GetErrorGroups(FromToDateDto fromToDateDto)
         {
-            using (var db = new alis_uatContext())
+            using (var db = new AlisUatContext())
             {
                 var query = await
                 (from gba in db.GBatchAudit
@@ -58,7 +58,7 @@ namespace ReporterConsole.DAOs
 
         public static async Task<List<TaskListDto>> GetTaskList(FromToDateDto fromToDateDto)
         {
-            using (var db = new alis_uatContext())
+            using (var db = new AlisUatContext())
             {
                 var q =
                     from gba in db.GBatchAudit
@@ -90,7 +90,7 @@ namespace ReporterConsole.DAOs
 
         public static async Task<List<RunStatsDto>> GetBatchStatistics(FromToDateDto fromToDateDto)
         {
-            using (var db = new alis_uatContext())
+            using (var db = new AlisUatContext())
             {
                 var q = from gba in db.GBatchAudit
                     where gba.EntryTime > fromToDateDto.FromDate &&
@@ -114,7 +114,7 @@ namespace ReporterConsole.DAOs
 
         public static async Task<List<AllErrorsDto>> GetAllErrors(FromToDateDto fromToDateDto)
         {
-            using (var db = new alis_uatContext())
+            using (var db = new AlisUatContext())
             {
                 var q = from gba in db.GBatchAudit
                     join tt in db.TTask on gba.TaskId equals tt.TaskId

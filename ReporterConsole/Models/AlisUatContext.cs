@@ -1,12 +1,11 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 using Microsoft.Extensions.Configuration;
 using ReporterConsole.Utils;
 
 namespace ReporterConsole.Models
 {
-    public partial class alis_uatContext : DbContext
+    public partial class AlisUatContext : DbContext
     {
         public static IConfigurationRoot Configuration { get; set; }
         public virtual DbSet<GBatchAudit> GBatchAudit { get; set; }
@@ -14,10 +13,16 @@ namespace ReporterConsole.Models
         public virtual DbSet<TTask> TTask { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {           
+        {
+            var connString = AppConfig.Configuration["ConnectionStrings:Production"];
+            if (connString == null)
+            {
+                Environment.ExitCode = 1;
+                throw new Exception("Configuration File Is Missing or Currupted!");
+            }
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(AppConfig.Configuration["ConnectionStrings:Production"]);
+                optionsBuilder.UseSqlServer(connString);
             }
         }
 

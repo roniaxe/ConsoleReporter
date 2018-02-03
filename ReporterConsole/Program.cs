@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ReporterConsole.DTOs;
 using ReporterConsole.Utils;
@@ -11,30 +12,46 @@ namespace ReporterConsole
 
         public static async Task Main(string[] args)
         {
-
-            if (args != null && args.Length >= 2)
-            {
-                _dateDto = GetDatesFromCommandLineExecutable(args[0], args[1]);
-            }
+            _dateDto = GetDatesFromCommandLineExecutable(args);
             Console.WriteLine($@"From Date: {_dateDto?.FromDate}, To Date: {_dateDto?.ToDate}");
             var reportLocation = ReportManager.ExportDataSet(await QueryManager.GetQueriesResultList(_dateDto));
-            DistributionManager.SendReport(reportLocation);
-            Console.ReadKey();
+            //DistributionManager.SendReport(reportLocation);
+            DistributionManager.SendUsingSmtpClient(reportLocation);
+            Environment.ExitCode = 0;
         }
 
-        private static FromToDateDto GetDatesFromCommandLineExecutable(string arg1, string arg2)
+        private static FromToDateDto GetDatesFromCommandLineExecutable(string[] args)
         {
             FromToDateDto dateDto;
             try
             {
-                dateDto = new FromToDateDto
+                switch (args.Length)
                 {
-                    FromDate = DateTime.Parse(arg1),
-                    ToDate = DateTime.Parse(arg2)
-                };
+                    case 0:
+                        dateDto = new FromToDateDto { FromDate = DateTime.Now, ToDate = DateTime.Now.AddDays(1) };
+                        break;
+                    case 1:
+                        dateDto = new FromToDateDto
+                        {
+                            FromDate = DateTime.Parse(args[0]),
+                            ToDate = DateTime.Parse(args[0]).AddDays(1)
+                        };
+                        break;
+                    case 2:
+                        dateDto = new FromToDateDto
+                        {
+                            FromDate = DateTime.Parse(args[0]),
+                            ToDate = DateTime.Parse(args[1])
+                        };
+                        break;
+                    default:
+                        Environment.ExitCode = 1;
+                        throw new Exception("Too Many Arguments");
+                }
             }
             catch (Exception e)
             {
+                Environment.ExitCode = 1;
                 Console.WriteLine(e.Message);
                 throw;
             }
