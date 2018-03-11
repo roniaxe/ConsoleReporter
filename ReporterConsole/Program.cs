@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ namespace ReporterConsole
 
         public static ArgsDto ReporterArgs = new ArgsDto();
 
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             // Handle Arguments
             var app = new CommandLineApplication();
@@ -55,11 +56,10 @@ namespace ReporterConsole
 
             Console.WriteLine($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
 
-            // Create Report, Save Report Location
-            var reportLocation = ReportManager.ExportDataSet(await QueryManager.GetQueriesResultList());
-
             // Send Email Report To Dist List
-            DistributionManager.SendUsingSmtpClient(reportLocation);
+            var smtpDistributor = SProvider.GetService<IDistributor>();
+            smtpDistributor.ExecuteAsync();
+            //DistributionManager.SendUsingSmtpClient(attachmentLocation);
 
             Environment.ExitCode = 0;
         }

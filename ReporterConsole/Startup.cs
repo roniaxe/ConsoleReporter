@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
@@ -33,14 +34,16 @@ namespace ReporterConsole
                 Environment.ExitCode = -1;
                 throw new Exception($"Connection String Is Empty For {env}. Add It To config.json");
             }
-            var sd = Encrypter.DecryptString(Configuration.GetConnectionString("Production"), Encrypter.Key);
+
             ConnectionString = Encrypter.DecryptString(encryptedConnectionString, Encrypter.Key);
             Program.ReporterArgs.DbName = new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddTransient<IDistributionList, ConfigFileDistributionList>();
+            services.AddTransient<IDistributor, SmtpClientDistributor>();
+            services.AddTransient<IReportCreator<DataTable>, ExcelReportCreator>();
             services.AddLogging(builder => builder.AddConsole().AddDebug());
             services.AddSingleton<IConfigurationRoot>(Configuration);
             services.AddDbContext<AlisUatContext>(builder => builder.UseSqlServer(ConnectionString));

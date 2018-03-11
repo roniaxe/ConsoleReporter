@@ -2,18 +2,39 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Extensions.Logging;
+using ReporterConsole.Exceptions;
 
 namespace ReporterConsole.Utils
 {
-    public static class ReportManager
+    class ExcelReportCreator : IReportCreator<DataTable>
     {
-        public static string ExportDataSet(List<DataTable> dataTables)
+        private readonly ILogger<ExcelReportCreator> _logger;
+        private readonly string _reportLocation;
+        private List<DataTable> _dataSource;
+
+        public ExcelReportCreator(ILoggerFactory loggerFactory)
         {
-            var destination = $@"C:\DailyBatchReports\BatchesDailySummary_PROD_{DateTime.Today:M}.xlsx";
-            using (var workbook = SpreadsheetDocument.Create(destination, SpreadsheetDocumentType.Workbook))
+            _logger = loggerFactory.CreateLogger<ExcelReportCreator>();
+            _reportLocation = AppConfig.Configuration.GetSection("ReportsLocation").Value 
+                              + $@"BatchesDailySummary_{Program.ReporterArgs.Environment}_{Program.ReporterArgs.FromDate:M}.xlsx";            
+        }
+
+        public async Task<string> CreateReportAsync()
+        {
+            _logger.LogInformation("Creating Report...");
+            if (_reportLocation == null)
+            {
+                _logger.LogError("Can't Find Attachment Location, Please Config It In config.json File.");
+                throw new MissingAttachmentLocationException("Can't Find Attachment Location, Please Config It In config.json File.");
+            }
+            _logger.LogInformation("Querying The Database Async...");
+            _dataSource = await QueryManager.GetQueriesResultList();
+            using (var workbook = SpreadsheetDocument.Create(_reportLocation, SpreadsheetDocumentType.Workbook))
             {
                 var workbookPart = workbook.AddWorkbookPart();
 
@@ -22,8 +43,9 @@ namespace ReporterConsole.Utils
                     Sheets = new Sheets()
                 };
                 uint sheetId = 1;
-                foreach (var table in dataTables)
+                foreach (var table in _dataSource)
                 {
+                    _logger.LogInformation($@"Creating {table.TableName} Sheet...");
                     var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
                     var sheetData = new SheetData();
                     sheetPart.Worksheet = new Worksheet(sheetData);
@@ -36,7 +58,7 @@ namespace ReporterConsole.Utils
                         sheetId =
                             sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
 
-                    var sheet = new Sheet {Id = relationshipId, SheetId = sheetId, Name = table.TableName};
+                    var sheet = new Sheet { Id = relationshipId, SheetId = sheetId, Name = table.TableName };
                     sheets.Append(sheet);
 
                     var headerRow = new Row();
@@ -76,8 +98,8 @@ namespace ReporterConsole.Utils
                     }
                 }
             }
-
-            return destination;
+            _logger.LogInformation("Done Creating Report!");
+            return _reportLocation;
         }
 
         private static CellValues? GetTypeOfCellValue(object o)
@@ -101,5 +123,12 @@ namespace ReporterConsole.Utils
 
             return returnType;
         }
+    }
+    internal enum ValueType
+    {
+        String,
+        Integer,
+        Boolean,
+        Date
     }
 }

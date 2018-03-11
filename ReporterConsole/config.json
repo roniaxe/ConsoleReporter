@@ -1,23 +1,28 @@
 ﻿{
-   "ConnectionStrings": {
-      "Production": "o08BLTY3/mZq/BpmR3XlZg9DtL5kwwB8Mbj2CfdXAZ55Ne6NZT67k+KxQzZu+iXeYKjAT5BIoKV2BWxeYL7XdJMvxrR0DzntHweowCfPonlVJ/JGqZb8RqiGdn8xzReV0shOBaKLng0feEMf+rjXlr5F9MuLRB/nZirGZIpftKe4gvcM5DcwOwUrzXmDx22v605IosKBWKgIqTDGsYiIJCTMfkhKlbI2irkqv6VlUwdcwFH5D72UExhsOdRmnifUOxO2QVOc6TyLD5ROO4bTOd418aUWjYe/XduStEmZiLH0VF0RdDZSQUv5mlNS6NgdSoP9diJbBeOerwsnGJN9LA==",
-      "Blue": "RAVQUh47NeyP2qkISW5WU6by9/T6N7sqYHDDQe4UKwz8PTa1bAf/4U6fWUatH0HYXYalYUpsAZGCrdEZ09Z7erXDqQ77ezMZ2jG724C3kiAsPPNufkYS37ecaDVL3AG3ImhAVQsgML6T+jotODmd1LLFsMiWyp2n2Y17q+VvdLSqquhPfeMSpKd0iFcdClvxtJXZ/AfeJI6b47xsRLcZgxfxCgweWxdYkw5zqNDCQR+zN+9tN7bFcIBkpLJjqOvWwU3GaKykZQ6MmIkFhl5Kaje9CjP3hVqWTWp11266w8Il+48EHA9vgSGzhGbeGjlx4HOocjYMbtRy+TscAax4BA=="
-   },
-   "DistributionList": [
-      {
-         "EmailAddress": "roni.axelrad@sapiens.com"
-      },
-      {
-         "EmailAddress": "Tony.Green@fbitn.com"
-      },
-      {
-         "EmailAddress": "Chris.Grissom@fbitn.com"
-      },
-      {
-         "EmailAddress": "Ben.Gilles@fbitn.com"
-      },
-      {
-         "EmailAddress": "ziv.Kalanthroff@sapiens.com"
-      }
-   ]
+  "ConnectionStrings": {
+    "Production": "o08BLTY3/mZq/BpmR3XlZg9DtL5kwwB8Mbj2CfdXAZ55Ne6NZT67k+KxQzZu+iXeYKjAT5BIoKV2BWxeYL7XdJMvxrR0DzntHweowCfPonlVJ/JGqZb8RqiGdn8xzReV0shOBaKLng0feEMf+rjXlr5F9MuLRB/nZirGZIpftKe4gvcM5DcwOwUrzXmDx22v605IosKBWKgIqTDGsYiIJCTMfkhKlbI2irkqv6VlUwdcwFH5D72UExhsOdRmnifUOxO2QVOc6TyLD5ROO4bTOd418aUWjYe/XduStEmZiLH0VF0RdDZSQUv5mlNS6NgdSoP9diJbBeOerwsnGJN9LA==",
+    "Blue": "RAVQUh47NeyP2qkISW5WU6by9/T6N7sqYHDDQe4UKwz8PTa1bAf/4U6fWUatH0HYXYalYUpsAZGCrdEZ09Z7erXDqQ77ezMZ2jG724C3kiAsPPNufkYS37ecaDVL3AG3ImhAVQsgML6T+jotODmd1LLFsMiWyp2n2Y17q+VvdLSqquhPfeMSpKd0iFcdClvxtJXZ/AfeJI6b47xsRLcZgxfxCgweWxdYkw5zqNDCQR+zN+9tN7bFcIBkpLJjqOvWwU3GaKykZQ6MmIkFhl5Kaje9CjP3hVqWTWp11266w8Il+48EHA9vgSGzhGbeGjlx4HOocjYMbtRy+TscAax4BA=="
+  },
+  "DistributionList": [
+    {
+      "EmailAddress": "roni.axelrad@sapiens.com"
+    },
+    {
+      "EmailAddress": "Tony.Green@fbitn.com"
+    },
+    {
+      "EmailAddress": "Chris.Grissom@fbitn.com"
+    },
+    {
+      "EmailAddress": "Ben.Gilles@fbitn.com"
+    },
+    {
+      "EmailAddress": "ziv.Kalanthroff@sapiens.com"
+    }
+  ],
+
+  "SmtpClientAddress": "casarray.tfbf.com",
+  "SenderMailAddress": "reporter@fbitn.com",
+  "ReportsLocation": "C:\\DailyBatchReports\\" 
+
 }
