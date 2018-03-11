@@ -34,10 +34,10 @@ namespace ReporterConsole.Utils
         public static void SendUsingSmtpClient(string attachment)
         {            
             var body = $@"Hello, <br />
-Attached the daily batches summary report for: <br />
-Date: <b>{DateTime.Today:D}</b><br />
-Environment: <b>Production/<b><br />
-DB: <b>alis_db_prod</b>";
+Attached the daily batches summary report for: <br /><br />
+Date: <b>{Program.ReporterArgs.FromDate:D}</b><br />
+Environment: <b>{Program.ReporterArgs.Environment}<b><br />
+DB: <b>{Program.ReporterArgs.DbName}</b>";
             SmtpClient smtpClient = new SmtpClient("casarray.tfbf.com") {UseDefaultCredentials = true};
             MailMessage mailMessage = new MailMessage {From = new MailAddress("reporter@fbitn.com")};
 

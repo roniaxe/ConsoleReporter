@@ -1,29 +1,21 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ReporterConsole.Models;
 using ReporterConsole.Utils;
 
-namespace ReporterConsole.Models
+namespace ReporterConsole.Data
 {
-    public partial class AlisUatContext : DbContext
+    public sealed partial class AlisUatContext : DbContext
     {
         public static IConfigurationRoot Configuration { get; set; }
-        public virtual DbSet<GBatchAudit> GBatchAudit { get; set; }
-        public virtual DbSet<TBatch> TBatch { get; set; }
-        public virtual DbSet<TTask> TTask { get; set; }
+        public DbSet<GBatchAudit> GBatchAudit { get; set; }
+        public DbSet<TBatch> TBatch { get; set; }
+        public DbSet<TTask> TTask { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public AlisUatContext(DbContextOptions options) : base(options)
         {
-            var connString = AppConfig.Configuration["ConnectionStrings:Production"];
-            if (connString == null)
-            {
-                Environment.ExitCode = 1;
-                throw new Exception("Configuration File Is Missing or Currupted!");
-            }
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(connString);
-            }
+            Database.SetCommandTimeout(150000);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

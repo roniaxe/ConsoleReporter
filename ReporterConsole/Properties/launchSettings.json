@@ -2,7 +2,11 @@
   "profiles": {
     "ReporterConsole": {
       "commandName": "Project",
-      "commandLineArgs": "\"2018-01-03\" \"2018-01-04\""
+      "commandLineArgs": "create -f \"2018-03-07\" -t \"2018-03-09\" -e \"Blue\"",
+      "environmentVariables": {
+        "MY_TEST": "123",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }
