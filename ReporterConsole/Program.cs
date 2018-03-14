@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Data;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ReporterConsole.Distributor;
 using ReporterConsole.DTOs;
 using ReporterConsole.Utils;
 
 namespace ReporterConsole
 {
-    class Program
+	class Program
     {
 
         public static IServiceProvider SProvider;
 
         public static ArgsDto ReporterArgs = new ArgsDto();
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Handle Arguments
             var app = new CommandLineApplication();
@@ -55,11 +55,10 @@ namespace ReporterConsole
             }
 
             Console.WriteLine($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
-
-            // Send Email Report To Dist List
+            
             var smtpDistributor = SProvider.GetService<IDistributor>();
-            smtpDistributor.ExecuteAsync();
-            //DistributionManager.SendUsingSmtpClient(attachmentLocation);
+	        // Create Report & Send Email Report To Dist List
+            await smtpDistributor.ExecuteAsync();
 
             Environment.ExitCode = 0;
         }

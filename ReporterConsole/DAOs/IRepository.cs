@@ -14,6 +14,6 @@ namespace ReporterConsole.DAOs
 
         Task<List<TaskListDto>> GetTaskList();
 
-        Task<IList<GroupedErrorsDTO>> GetErrorGroups();
+        Task<List<GroupedErrorsDTO>> GetErrorGroups();
     }
 }

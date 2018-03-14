@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReporterConsole.Data;
 using ReporterConsole.DAOs;
+using ReporterConsole.DistributionListHandler;
+using ReporterConsole.Distributor;
+using ReporterConsole.ReportCreator;
 using ReporterConsole.Utils;
 
 namespace ReporterConsole

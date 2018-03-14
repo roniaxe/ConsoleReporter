@@ -24,39 +24,39 @@ namespace ReporterConsole.Utils
             //Get All Errors
             var allErrors = repo.GetAllErrors();
 
-            List<Task> tasks = new List<Task> { errors, taskList, runStats, allErrors };
-            while (tasks.Any())
-            {
-                var completedTask = await Task.WhenAny(tasks);
-                DataTable dataTable = null;
-                if (completedTask == errors)
-                {
-                    dataTable = EnumerableToDataTable.ToDataTable(await errors);
-                    dataTable.TableName = "Error Groups";
-                }
+			List<Task> tasks = new List<Task> { errors, taskList, runStats, allErrors };
+			while (tasks.Any())
+			{
+				var completedTask = await Task.WhenAny(tasks);
+				DataTable dataTable = null;
+				if (completedTask == errors)
+				{
+					dataTable = EnumerableToDataTable.ToDataTable(await errors);
+					dataTable.TableName = "Error Groups";
+				}
 
-                if (completedTask == taskList)
-                {
-                    dataTable = EnumerableToDataTable.ToDataTable(await taskList);
-                    dataTable.TableName = "Batch Run List";
-                }
+				if (completedTask == taskList)
+				{
+					dataTable = EnumerableToDataTable.ToDataTable(await taskList);
+					dataTable.TableName = "Batch Run List";
+				}
 
-                if (completedTask == runStats)
-                {
-                    dataTable = EnumerableToDataTable.ToDataTable(await runStats);
-                    dataTable.TableName = "Run Statistics";
-                }
+				if (completedTask == runStats)
+				{
+					dataTable = EnumerableToDataTable.ToDataTable(await runStats);
+					dataTable.TableName = "Run Statistics";
+				}
 
-                if (completedTask == allErrors)
-                {
-                    dataTable = EnumerableToDataTable.ToDataTable(await allErrors);
-                    dataTable.TableName = "All Errors";
-                }
-                result.Add(dataTable);
-                tasks.Remove(completedTask);
-            }
+				if (completedTask == allErrors)
+				{
+					dataTable = EnumerableToDataTable.ToDataTable(await allErrors);
+					dataTable.TableName = "All Errors";
+				}
+				result.Add(dataTable);
+				tasks.Remove(completedTask);
+			}
 
-            return result;
+			return result;
         }
     }
 }

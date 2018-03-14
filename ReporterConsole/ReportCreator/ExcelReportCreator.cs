@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ReporterConsole.Exceptions;
+using ReporterConsole.Utils;
 
-namespace ReporterConsole.Utils
+namespace ReporterConsole.ReportCreator
 {
     class ExcelReportCreator : IReportCreator<DataTable>
     {
@@ -17,12 +19,15 @@ namespace ReporterConsole.Utils
         private readonly string _reportLocation;
         private List<DataTable> _dataSource;
 
-        public ExcelReportCreator(ILoggerFactory loggerFactory)
+		public IConfiguration Configuration { get; }
+
+		public ExcelReportCreator(ILoggerFactory loggerFactory, IConfigurationRoot configuration)
         {
             _logger = loggerFactory.CreateLogger<ExcelReportCreator>();
-            _reportLocation = AppConfig.Configuration.GetSection("ReportsLocation").Value 
-                              + $@"BatchesDailySummary_{Program.ReporterArgs.Environment}_{Program.ReporterArgs.FromDate:M}.xlsx";            
-        }
+	        Configuration = configuration;
+            _reportLocation = Configuration.GetSection("ReportsLocation").Value 
+                              + $@"BatchesDailySummary_{Program.ReporterArgs.Environment}_{Program.ReporterArgs.FromDate:M}.xlsx";		
+		}
 
         public async Task<string> CreateReportAsync()
         {
