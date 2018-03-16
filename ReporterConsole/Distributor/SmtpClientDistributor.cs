@@ -21,24 +21,23 @@ namespace ReporterConsole.Distributor
 		public IConfiguration Configuration { get; }
 
 		public SmtpClientDistributor(IDistributionList distributionList, IReportCreator<DataTable> reporter,
-			ILoggerFactory loggerFactory, IConfigurationRoot configuration)
+		    ILogger<SmtpClientDistributor> logger, IConfigurationRoot configuration)
 		{
 			DistributionList = distributionList.GetList();
 			_reporter = reporter;
 			Configuration = configuration;
-			_logger = loggerFactory.CreateLogger<SmtpClientDistributor>();
+		    _logger = logger;
 		}
 
 		public async Task ExecuteAsync()
-		{
-			_logger.LogInformation("Getting SMTP Client Address Information From config.json");
+		{			
 			var smtpClientAddress = Configuration.GetSection("SmtpClientAddress").Value;
-			_logger.LogInformation("Getting Sender Mail Address From config.json");
 			var senderMailAddress = Configuration.GetSection("SenderMailAddress").Value;
 
 			SmtpClient smtpClient = new SmtpClient(smtpClientAddress) { UseDefaultCredentials = true };
 			_attachment = await _reporter.CreateReportAsync();
 			var mailMessage = ConfigMessage(senderMailAddress);
+            
 			_logger.LogInformation("Sending Report To Distribution List");
 			smtpClient.Send(mailMessage);
 		}

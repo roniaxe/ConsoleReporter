@@ -18,6 +18,9 @@ namespace ReporterConsole
 
         public static async Task Main(string[] args)
         {
+            // Catch Unhandled Exceptions
+            AppDomain.CurrentDomain.UnhandledException += MyHandler;
+
             // Handle Arguments
             var app = new CommandLineApplication();
             InitCommandLineApp(app);
@@ -38,7 +41,7 @@ namespace ReporterConsole
             new Startup().ConfigureServices(services);
 
             // Get Service Provider
-            SProvider = services.BuildServiceProvider();
+            SProvider = services.BuildServiceProvider();            
 
             // Create Logger
             var logger = SProvider
@@ -54,13 +57,21 @@ namespace ReporterConsole
                 return;
             }
 
-            Console.WriteLine($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
+            logger.LogInformation($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
             
             var smtpDistributor = SProvider.GetService<IDistributor>();
 	        // Create Report & Send Email Report To Dist List
             await smtpDistributor.ExecuteAsync();
 
             Environment.ExitCode = 0;
+        }
+
+        private static void MyHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception) args.ExceptionObject;
+            Console.WriteLine("MyHandler caught : " + e.Message);
+            Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
+            Environment.ExitCode = 1;
         }
 
         private static void InitCommandLineApp(CommandLineApplication app)

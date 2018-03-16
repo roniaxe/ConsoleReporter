@@ -32,7 +32,7 @@ namespace ReporterConsole
                 : Program.ReporterArgs.Environment;
 
             var encryptedConnectionString = Configuration.GetConnectionString(env);
-            if (string.IsNullOrEmpty(Program.ReporterArgs.TextToEncrypt) && string.IsNullOrEmpty(encryptedConnectionString))
+            if (string.IsNullOrEmpty(encryptedConnectionString))
             {
                 Environment.ExitCode = -1;
                 throw new Exception($"Connection String Is Empty For {env}. Add It To config.json");
@@ -47,7 +47,12 @@ namespace ReporterConsole
             services.AddTransient<IDistributionList, ConfigFileDistributionList>();
             services.AddTransient<IDistributor, SmtpClientDistributor>();
             services.AddTransient<IReportCreator<DataTable>, ExcelReportCreator>();
-            services.AddLogging(builder => builder.AddConsole().AddDebug());
+            services.AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Trace);
+                builder.AddConsole();
+                builder.AddDebug();
+            });
             services.AddSingleton<IConfigurationRoot>(Configuration);
             services.AddDbContext<AlisUatContext>(builder => builder.UseSqlServer(ConnectionString));
             services.AddScoped<IRepository, BatchAuditRepo>();
