@@ -23,8 +23,9 @@ namespace ReporterConsole
         public Startup()
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(AppContext.BaseDirectory))
-                .AddJsonFile("config.json", optional: true);
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("config.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true);
             Configuration = builder.Build();
 
             var env = string.IsNullOrEmpty(Program.ReporterArgs.Environment)
