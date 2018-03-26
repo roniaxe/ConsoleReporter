@@ -3,7 +3,8 @@
 namespace ReporterConsole.Distributor
 {
 	public interface IDistributor
-    {
-        Task ExecuteAsync();
+	{
+	    string Attachment { get; set; }
+        void Execute();
     }
 }

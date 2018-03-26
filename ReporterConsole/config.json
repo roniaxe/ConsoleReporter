@@ -11,6 +11,7 @@
 
   "SmtpClientAddress": "casarray.tfbf.com",
   "SenderMailAddress": "reporter@fbitn.com",
-  "ReportsLocation": "C:\\DailyBatchReports\\" 
+  "ReportsLocation": "C:\\DailyBatchReports\\",
+  "SendReport": false
 
 }

@@ -1,74 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Net.Mail;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ReporterConsole.DistributionListHandler;
-using ReporterConsole.ReportCreator;
+using ReporterConsole.DTOs;
 
 namespace ReporterConsole.Distributor
 {
-	class SmtpClientDistributor : IDistributor
-	{
-		private string _attachment;
-		private readonly IReportCreator<DataTable> _reporter;
-		private readonly ILogger<SmtpClientDistributor> _logger;
+    class SmtpClientDistributor : IDistributor
+    {
+        private readonly ILogger<SmtpClientDistributor> _logger;
 
-		public IEnumerable<string> DistributionList { get; }
-		public IConfiguration Configuration { get; }
+        public IEnumerable<string> DistributionList { get; }
+        public AppSettings Configuration { get; }
+        public string Attachment { get; set; }
 
-		public SmtpClientDistributor(IDistributionList distributionList, IReportCreator<DataTable> reporter,
-		    ILogger<SmtpClientDistributor> logger, IConfigurationRoot configuration)
-		{
-			DistributionList = distributionList.GetList();
-			_reporter = reporter;
-			Configuration = configuration;
-		    _logger = logger;
-		}
+        public SmtpClientDistributor(
+            IDistributionList distributionList,
+            ILogger<SmtpClientDistributor> logger, 
+            IOptions<AppSettings> configuration)
+        {
+            DistributionList = distributionList.GetList();
+            Configuration = configuration.Value;
+            _logger = logger;
+        }
 
-		public async Task ExecuteAsync()
-		{			
-			var smtpClientAddress = Configuration.GetSection("SmtpClientAddress").Value;
-			var senderMailAddress = Configuration.GetSection("SenderMailAddress").Value;
+        public void Execute()
+        {
+            var smtpClientAddress = Configuration.SmtpClientAddress;
+            var senderMailAddress = Configuration.SenderMailAddress;
 
-			SmtpClient smtpClient = new SmtpClient(smtpClientAddress) { UseDefaultCredentials = true };
-			_attachment = await _reporter.CreateReportAsync();
-			var mailMessage = ConfigMessage(senderMailAddress);
-            
-			_logger.LogInformation("Sending Report To Distribution List");
-			smtpClient.Send(mailMessage);
-		}
+            SmtpClient smtpClient = new SmtpClient(smtpClientAddress) { UseDefaultCredentials = true };
+            var mailMessage = ConfigMessage(senderMailAddress);
 
-		private MailMessage ConfigMessage(string senderMailAddress)
-		{
-			var body = CreateHtmlBody();
-			MailMessage mailMessage = new MailMessage { From = new MailAddress(senderMailAddress) };
+            _logger.LogInformation("Sending Report To Distribution List");
+            smtpClient.Send(mailMessage);
+        }
 
-			foreach (var recipient in DistributionList)
-			{
-				mailMessage.To.Add(recipient);
-			}
+        private MailMessage ConfigMessage(string senderMailAddress)
+        {
+            var body = CreateHtmlBody();
+            MailMessage mailMessage = new MailMessage { From = new MailAddress(senderMailAddress) };
 
-			System.Net.Mime.ContentType contentType = new System.Net.Mime.ContentType
-			{
-				MediaType = System.Net.Mime.MediaTypeNames.Application.Octet,
-				Name = Path.GetFileName(_attachment)
-			};
-			mailMessage.Attachments.Add(new Attachment(_attachment, contentType));
-			mailMessage.Body = body;
-			mailMessage.IsBodyHtml = true;
-			mailMessage.Subject =
-				$@"Daily Batch Report - {Program.ReporterArgs.Environment}, {Program.ReporterArgs.DbName} - {DateTime.Today:D}";
-			return mailMessage;
-		}
+            foreach (var recipient in DistributionList)
+            {
+                mailMessage.To.Add(recipient);
+            }
 
-		private string CreateHtmlBody()
-		{
-			var html =
-				$@"<!DOCTYPE html>
+            System.Net.Mime.ContentType contentType = new System.Net.Mime.ContentType
+            {
+                MediaType = System.Net.Mime.MediaTypeNames.Application.Octet,
+                Name = Path.GetFileName(Attachment)
+            };
+            mailMessage.Attachments.Add(new Attachment(Attachment, contentType));
+            mailMessage.Body = body;
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject =
+                $@"Daily Batch Report - {Program.ReporterArgs.Environment}, {Program.ReporterArgs.DbName} - {DateTime.Today:D}";
+            return mailMessage;
+        }
+
+        private string CreateHtmlBody()
+        {
+            var html =
+                $@"<!DOCTYPE html>
 <html>
 <body>
 	<h4>Hello,</br> Attached the report for <b>{Program.ReporterArgs.FromDate:D}</b></h4>
@@ -77,7 +74,7 @@ namespace ReporterConsole.Distributor
 </body>
 </html> ";
 
-			return html;
-		}
-	}
+            return html;
+        }
+    }
 }

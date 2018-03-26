@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Data;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ReporterConsole.Distributor;
 using ReporterConsole.DTOs;
+using ReporterConsole.ReportCreator;
 using ReporterConsole.Utils;
 
 namespace ReporterConsole
 {
-	class Program
+    class Program
     {
 
         public static IServiceProvider SProvider;
@@ -49,7 +52,7 @@ namespace ReporterConsole
                 .CreateLogger<Program>();
 
             // Check Date
-            if (DateTime.Today > new DateTime(2018, 04, 10))
+            if (DateTime.Today > new DateTime(2018, 04, 25))
             {
                 logger.LogError("Error Loading Settings..");
                 Console.WriteLine("Error Loading Settings..");
@@ -58,11 +61,19 @@ namespace ReporterConsole
             }
 
             logger.LogInformation($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
-            
-            var smtpDistributor = SProvider.GetService<IDistributor>();
-	        // Create Report & Send Email Report To Dist List
-            await smtpDistributor.ExecuteAsync();
 
+            var appSettings = SProvider.GetService<IOptions<AppSettings>>();
+            var reportCreator = SProvider.GetService<IReportCreator<DataTable>>();
+
+            var attachment = await reportCreator.CreateReportAsync();
+            // Create Report & Send Email Report To Dist List
+            if (appSettings.Value.SendReport == true)
+            {
+                var smtpDistributor = SProvider.GetService<IDistributor>();
+                smtpDistributor.Attachment = attachment;
+                smtpDistributor.Execute();
+            }           
+	                 
             Environment.ExitCode = 0;
         }
 

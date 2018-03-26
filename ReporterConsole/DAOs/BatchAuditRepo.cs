@@ -101,31 +101,7 @@ namespace ReporterConsole.DAOs
 											   StartTime = taskBatchGroup.Min(p => p.EntryTime)
 										   };
 
-			//var q =
-			//from gba in _db.GBatchAudit
-			//join tTask in _db.TTask on gba.TaskId equals tTask.TaskId
-			//join tBatch in _db.TBatch on gba.BatchId equals tBatch.BatchId
-			//where gba.EntryTime > ReporterArgs.FromDate && gba.EntryTime < ReporterArgs.ToDate
-			//group new { gba, tTask, tBatch } by new
-			//{
-			//	gba.BatchRunNum,
-			//	tTask.TaskId,
-			//	tBatch.BatchId,
-			//	tTask.TaskName,
-			//	tBatch.BatchName
-			//}
-			//into g
-			//select new TaskListDto
-			//{
-			//	BatchName = g.Key.BatchName,
-			//	BatchId = g.Key.BatchId,
-			//	TaskName = g.Key.TaskName,
-			//	TaskId = g.Key.TaskId,
-			//	BatchRunNumber = g.Key.BatchRunNum,
-			//	StartTime = g.Min(p => p.gba.EntryTime)
-			//};
-
-			return await gbaGroupedByErrorMessage.ToListAsync();
+			return await gbaGroupedByErrorMessage.OrderBy(t => t.StartTime).ToListAsync();
 
 
 		}

@@ -1,25 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using ReporterConsole.DTOs;
 using ReporterConsole.Utils;
 
 namespace ReporterConsole.DistributionListHandler
 {
     class ConfigFileDistributionList : IDistributionList
     {
-		public IConfigurationRoot Configuration { get; }
+		public AppSettings Configuration { get; }
 
-	    public ConfigFileDistributionList(IConfigurationRoot configuration)
+	    public ConfigFileDistributionList(IOptions<AppSettings> configuration)
 	    {
-			Configuration = configuration;
+			Configuration = configuration.Value;
 		}
 
 		public IEnumerable<string> GetList()
         {
-            return Configuration.GetSection("DistributionList")
+            return Configuration.DistributionList
 	            .AsEnumerable()
-				.Where(recipient => recipient.Value != null)
-                .Select(recipient => recipient.Value);
+				.Where(recipient => recipient != null)
+                .Select(recipient => recipient.EmailAddress);
         }
     }
 }

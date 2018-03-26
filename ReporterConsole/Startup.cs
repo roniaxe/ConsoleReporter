@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ReporterConsole.Data;
 using ReporterConsole.DAOs;
 using ReporterConsole.DistributionListHandler;
 using ReporterConsole.Distributor;
+using ReporterConsole.DTOs;
 using ReporterConsole.ReportCreator;
 using ReporterConsole.Utils;
 
@@ -45,9 +47,11 @@ namespace ReporterConsole
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppSettings>(Configuration);
             services.AddTransient<IDistributionList, ConfigFileDistributionList>();
             services.AddTransient<IDistributor, SmtpClientDistributor>();
-            services.AddTransient<IReportCreator<DataTable>, ExcelReportCreator>();
+            //services.AddTransient<IReportCreator<DataTable>, ExcelReportCreator>();
+            services.AddTransient<IReportCreator<DataTable>, NpoiReportCreator>();
             services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Trace);

@@ -8,6 +8,8 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using ReporterConsole.DTOs;
 using ReporterConsole.Exceptions;
 using ReporterConsole.Utils;
 
@@ -16,30 +18,30 @@ namespace ReporterConsole.ReportCreator
     class ExcelReportCreator : IReportCreator<DataTable>
     {
         private readonly ILogger<ExcelReportCreator> _logger;
-        private readonly string _reportLocation;
-        private List<DataTable> _dataSource;
+        private readonly AppSettings _configurations;
 
-		public IConfiguration Configuration { get; }
+        public Task<List<DataTable>> Data { get; set; }
 
-		public ExcelReportCreator(ILoggerFactory loggerFactory, IConfigurationRoot configuration)
+		public ExcelReportCreator(ILoggerFactory loggerFactory, IOptions<AppSettings> configuration)
         {
             _logger = loggerFactory.CreateLogger<ExcelReportCreator>();
-	        Configuration = configuration;
-            _reportLocation = Configuration.GetSection("ReportsLocation").Value 
-                              + $@"BatchesDailySummary_{Program.ReporterArgs.Environment}_{Program.ReporterArgs.FromDate:M}.xlsx";		
+            _configurations = configuration.Value;            	
 		}
 
         public async Task<string> CreateReportAsync()
         {
-            _logger.LogInformation("Creating Report...");
-            if (_reportLocation == null)
+            Data = QueryManager.GetQueriesResultList();           
+
+            if (string.IsNullOrWhiteSpace(_configurations.ReportsLocation))
             {
                 _logger.LogError("Can't Find Attachment Location, Please Config It In config.json File.");
                 throw new MissingAttachmentLocationException("Can't Find Attachment Location, Please Config It In config.json File.");
             }
-            _logger.LogInformation("Querying The Database Async...");
-            _dataSource = await QueryManager.GetQueriesResultList();
-            using (var workbook = SpreadsheetDocument.Create(_reportLocation, SpreadsheetDocumentType.Workbook))
+
+            var reportLocation = _configurations.ReportsLocation
+                                 + $@"BatchesDailySummary_{Program.ReporterArgs.Environment}_{Program.ReporterArgs.FromDate:M}.xlsx";
+
+            using (var workbook = SpreadsheetDocument.Create(reportLocation, SpreadsheetDocumentType.Workbook))
             {
                 var workbookPart = workbook.AddWorkbookPart();
 
@@ -48,9 +50,9 @@ namespace ReporterConsole.ReportCreator
                     Sheets = new Sheets()
                 };
                 uint sheetId = 1;
-                foreach (var table in _dataSource)
+                foreach (var table in await Data)
                 {
-                    _logger.LogInformation($@"Creating {table.TableName} Sheet...");
+                    _logger.LogInformation($@"Creating Table - {table.TableName}");
                     var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
                     var sheetData = new SheetData();
                     sheetPart.Worksheet = new Worksheet(sheetData);
@@ -104,7 +106,7 @@ namespace ReporterConsole.ReportCreator
                 }
             }
             _logger.LogInformation("Done Creating Report!");
-            return _reportLocation;
+            return reportLocation;
         }
 
         private static CellValues? GetTypeOfCellValue(object o)
@@ -128,6 +130,8 @@ namespace ReporterConsole.ReportCreator
 
             return returnType;
         }
+
+        
     }
     internal enum ValueType
     {
