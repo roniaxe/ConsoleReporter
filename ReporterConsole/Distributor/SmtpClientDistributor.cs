@@ -13,7 +13,7 @@ namespace ReporterConsole.Distributor
     {
         private readonly ILogger<SmtpClientDistributor> _logger;
 
-        public IEnumerable<string> DistributionList { get; }
+        public IEnumerable<Recipient> DistributionList { get; }
         public AppSettings Configuration { get; }
         public string Attachment { get; set; }
 
@@ -46,7 +46,7 @@ namespace ReporterConsole.Distributor
 
             foreach (var recipient in DistributionList)
             {
-                mailMessage.To.Add(recipient);
+                mailMessage.To.Add(recipient.EmailAddress);
             }
 
             System.Net.Mime.ContentType contentType = new System.Net.Mime.ContentType

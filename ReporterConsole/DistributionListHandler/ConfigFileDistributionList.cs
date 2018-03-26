@@ -16,12 +16,9 @@ namespace ReporterConsole.DistributionListHandler
 			Configuration = configuration.Value;
 		}
 
-		public IEnumerable<string> GetList()
-        {
-            return Configuration.DistributionList
-	            .AsEnumerable()
-				.Where(recipient => recipient != null)
-                .Select(recipient => recipient.EmailAddress);
-        }
+		public IEnumerable<Recipient> GetList()
+		{
+		    return Configuration.DistributionList;
+		}
     }
 }
