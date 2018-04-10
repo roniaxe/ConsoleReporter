@@ -1,19 +1,15 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 using ReporterConsole.Models;
-using ReporterConsole.Utils;
 
 namespace ReporterConsole.Data
 {
     public sealed partial class AlisUatContext : DbContext
     {
-        public static IConfigurationRoot Configuration { get; set; }
         public DbSet<GBatchAudit> GBatchAudit { get; set; }
         public DbSet<TBatch> TBatch { get; set; }
         public DbSet<TTask> TTask { get; set; }
 
-        public AlisUatContext(DbContextOptions options) : base(options)
+        public AlisUatContext(DbContextOptions<AlisUatContext> options) : base(options)
         {
             Database.SetCommandTimeout(150000);
         }

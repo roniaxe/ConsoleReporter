@@ -12,5 +12,6 @@ namespace ReporterConsole.DTOs
         public string Task { get; set; }
         public int TaskId { get; set; }
         public int Count { get; set; }
+        public string DefectNo { get; set; }
     }
 }

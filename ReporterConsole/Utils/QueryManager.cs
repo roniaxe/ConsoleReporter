@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace ReporterConsole.Utils
         {
             var result = new List<DataTable>();
 
-            var repo = Program.SProvider.GetService<IRepository>();
+            var repo = Program.SProvider.GetService<IBatchAuditRepository>();
 
             //Get Grouped Errors
             var errors = repo.GetErrorGroups();
@@ -27,33 +28,41 @@ namespace ReporterConsole.Utils
 			List<Task> tasks = new List<Task> { errors, taskList, runStats, allErrors };
 			while (tasks.Any())
 			{
-				var completedTask = await Task.WhenAny(tasks);
-				DataTable dataTable = null;
-				if (completedTask == errors)
-				{
-					dataTable = EnumerableToDataTable.ToDataTable(await errors);
-					dataTable.TableName = "Error Groups";
-				}
+                try
+                {
+                    var completedTask = await Task.WhenAny(tasks);
+                    DataTable dataTable = null;
+                    if (completedTask == errors)
+                    {
+                        dataTable = EnumerableToDataTable.ToDataTable(await errors);
+                        dataTable.TableName = "Error Groups";
+                    }
 
-				if (completedTask == taskList)
-				{
-					dataTable = EnumerableToDataTable.ToDataTable(await taskList);
-					dataTable.TableName = "Batch Run List";
-				}
+                    if (completedTask == taskList)
+                    {
+                        dataTable = EnumerableToDataTable.ToDataTable(await taskList);
+                        dataTable.TableName = "Batch Run List";
+                    }
 
-				if (completedTask == runStats)
-				{
-					dataTable = EnumerableToDataTable.ToDataTable(await runStats);
-					dataTable.TableName = "Run Statistics";
-				}
+                    if (completedTask == runStats)
+                    {
+                        dataTable = EnumerableToDataTable.ToDataTable(await runStats);
+                        dataTable.TableName = "Run Statistics";
+                    }
 
-				if (completedTask == allErrors)
-				{
-					dataTable = EnumerableToDataTable.ToDataTable(await allErrors);
-					dataTable.TableName = "All Errors";
-				}
-				result.Add(dataTable);
-				tasks.Remove(completedTask);
+                    if (completedTask == allErrors)
+                    {
+                        dataTable = EnumerableToDataTable.ToDataTable(await allErrors);
+                        dataTable.TableName = "All Errors";
+                    }
+                    result.Add(dataTable);
+                    tasks.Remove(completedTask);
+                }
+                catch (System.Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    throw;
+                }
 			}
 
 			return result;

@@ -60,7 +60,8 @@ namespace ReporterConsole
             });
             services.AddSingleton<IConfigurationRoot>(Configuration);
             services.AddDbContext<AlisUatContext>(builder => builder.UseSqlServer(ConnectionString));
-            services.AddScoped<IRepository, BatchAuditRepo>();
+            services.AddDbContext<DefectContext>(builder => builder.UseSqlite($"Data Source=defects.db"));
+            services.AddScoped<IBatchAuditRepository, BatchAuditRepo>();
         }
     }
 }

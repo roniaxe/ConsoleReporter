@@ -70,9 +70,9 @@ namespace ReporterConsole.ReportCreator
                         headerCells.Add(headerCell);
                     }
 
-                    for (int i = 1; i < dataTable.Rows.Count; i++)
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
-                        IRow dataRow = sheet1.CreateRow(i);
+                        IRow dataRow = sheet1.CreateRow(i + 1);
                         for (int j = 0; j < headerCells.Count; j++)
                         {
                             var dataCell = dataRow.CreateCell(j);
