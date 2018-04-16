@@ -35,6 +35,7 @@ namespace ReporterConsole
             // Encrypt
             if (!string.IsNullOrEmpty(ReporterArgs.TextToEncrypt))
             {
+                Console.WriteLine();
                 Console.WriteLine(Encrypter.EncryptString(ReporterArgs.TextToEncrypt, Encrypter.Key));
                 return;
             }

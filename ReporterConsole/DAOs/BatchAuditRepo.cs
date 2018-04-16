@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -63,10 +64,11 @@ namespace ReporterConsole.DAOs
             var res = await gbaGroupedByErrorMessage.ToListAsync();
             foreach (var groupedErrorsDto in res)
             {
-                groupedErrorsDto.DefectNo = _defectContext.Defects.FirstOrDefault(def =>
+                var match = _defectContext.Defects.FirstOrDefault(def =>
                     def.Desc == groupedErrorsDto.Message &&
                     def.BatchId == groupedErrorsDto.BatchId &&
-                    def.TaskId == groupedErrorsDto.TaskId)?.DefectNumber;
+                    def.TaskId == groupedErrorsDto.TaskId);
+                groupedErrorsDto.DefectNo = match?.DefectNumber;
             }
 
             return res;
@@ -81,6 +83,7 @@ namespace ReporterConsole.DAOs
                                          where gbajoin.EntryTime >= ReporterArgs.FromDate &&
                                                gbajoin.EntryTime <= ReporterArgs.ToDate &&
                                                gbajoin.EntryType == 1
+                                         orderby gbajoin.EntryTime
                                          select new
                                          {
                                              gbajoin.EntryTime,
@@ -100,6 +103,7 @@ namespace ReporterConsole.DAOs
                                                Batch = gbaJoin.BatchName,
                                                BatchId = gbaJoin.BatchId,
                                            } into taskBatchGroup
+                                           
                                            select new TaskListDto
                                            {
                                                BatchName = taskBatchGroup.Key.Batch,
@@ -107,7 +111,7 @@ namespace ReporterConsole.DAOs
                                                TaskName = taskBatchGroup.Key.Task,
                                                TaskId = taskBatchGroup.Key.TaskId,
                                                BatchRunNumber = taskBatchGroup.Key.BatchRunNum,
-                                               StartTime = taskBatchGroup.Min(p => p.EntryTime)
+                                               StartTime = taskBatchGroup.Min(grp => grp.EntryTime)
                                            };
 
             return await gbaGroupedByErrorMessage.OrderBy(t => t.StartTime).ToListAsync();
