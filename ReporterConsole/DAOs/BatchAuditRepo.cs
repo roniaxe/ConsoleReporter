@@ -19,6 +19,7 @@ namespace ReporterConsole.DAOs
         {
             _db = db;
             _defectContext = defectContext;
+            _defectContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public async Task<List<GroupedErrorsDTO>> GetErrorGroups()
@@ -103,7 +104,7 @@ namespace ReporterConsole.DAOs
                                                Batch = gbaJoin.BatchName,
                                                BatchId = gbaJoin.BatchId,
                                            } into taskBatchGroup
-                                           
+
                                            select new TaskListDto
                                            {
                                                BatchName = taskBatchGroup.Key.Batch,
@@ -154,7 +155,7 @@ namespace ReporterConsole.DAOs
                         gba.EntryTime > ReporterArgs.FromDate &&
                         gba.EntryTime < ReporterArgs.ToDate &&
                         (gba.EntryType == 6 || gba.EntryType == 5)
-                    orderby new { gba.Description }
+                    //orderby new { gba.Description }
                     select new AllErrorsDto
                     {
                         Message = gba.Description,
@@ -166,7 +167,7 @@ namespace ReporterConsole.DAOs
                         TaskId = tt.TaskId,
                         BatchRunNumber = gba.BatchRunNum
                     };
-            return await q.ToListAsync();
+            return await q.OrderBy(o => o.Message).ToListAsync();
 
         }
     }

@@ -53,7 +53,7 @@ namespace ReporterConsole
                 .CreateLogger<Program>();
 
             // Check Date
-            if (DateTime.Today > new DateTime(2018, 04, 25))
+            if (DateTime.Today > new DateTime(2018, 06, 25))
             {
                 logger.LogError("Error Loading Settings..");
                 Console.WriteLine("Error Loading Settings..");
