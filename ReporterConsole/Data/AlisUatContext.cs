@@ -113,7 +113,7 @@ namespace ReporterConsole.Data
 
             modelBuilder.Entity<TBatch>(entity =>
             {
-                entity.HasKey(e => e.Uniqid)
+                entity.HasKey(e => e.BatchId)
                     .ForSqlServerIsClustered(false);
 
                 entity.ToTable("t_batch");
@@ -158,7 +158,7 @@ namespace ReporterConsole.Data
 
             modelBuilder.Entity<TTask>(entity =>
             {
-                entity.HasKey(e => e.Uniqid)
+                entity.HasKey(e => e.TaskId)
                     .ForSqlServerIsClustered(false);
 
                 entity.ToTable("t_task");

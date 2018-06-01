@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ReporterConsole.Models
 {
     public partial class TTask
     {
+        [Key]
         public int TaskId { get; set; }
         public string TaskName { get; set; }
         public DateTime OpeningRegDate { get; set; }

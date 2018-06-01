@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -19,51 +18,34 @@ namespace ReporterConsole.DAOs
         {
             _db = db;
             _defectContext = defectContext;
-            _defectContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            _db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public async Task<List<GroupedErrorsDTO>> GetErrorGroups()
         {
             var gbaByDateAndErrorType = from gba in _db.GBatchAudit
-                                        where gba.EntryTime >= ReporterArgs.FromDate &&
-                                              gba.EntryTime <= ReporterArgs.ToDate &&
-                                              (gba.EntryType == 5 || gba.EntryType == 6)
-                                        select gba;
+                where gba.EntryTime >= ReporterArgs.FromDate &&
+                      gba.EntryTime <= ReporterArgs.ToDate &&
+                      (gba.EntryType == 5 || gba.EntryType == 6)
+                group gba by new
+                {
+                    Message = Regex.Replace(gba.Description, @"[\d-]", string.Empty),
+                    Batch = gba.Batch.BatchName,
+                    gba.BatchId,
+                    Task = gba.Task.TaskName,
+                    gba.TaskId
+                } into grouping
+                select new GroupedErrorsDTO
+                {
+                    Message = grouping.Key.Message,
+                    Batch = grouping.Key.Batch,
+                    BatchId = grouping.Key.BatchId,
+                    Task = grouping.Key.Task,
+                    TaskId = grouping.Key.TaskId,
+                    Count = grouping.Count()
+                };
 
-            var gbaJoinTasksAndBatches = from gbajoin in gbaByDateAndErrorType
-                                         join task1 in _db.TTask on gbajoin.TaskId equals task1.TaskId
-                                         join batch1 in _db.TBatch on gbajoin.BatchId equals batch1.BatchId
-                                         select new
-                                         {
-                                             Desc = Regex.Replace(gbajoin.Description, @"[\d-]", string.Empty),
-                                             task1.TaskId,
-                                             task1.TaskName,
-                                             batch1.BatchId,
-                                             batch1.BatchName
-                                         };
-
-            var gbaGroupedByErrorMessage = from errs in gbaJoinTasksAndBatches
-                                           group errs by new
-                                           {
-                                               Message = errs.Desc,
-                                               Task = errs.TaskName,
-                                               TaskId = errs.TaskId,
-                                               Batch = errs.BatchName,
-                                               BatchId = errs.BatchId,
-                                               Count = errs
-                                           } into errGroup
-                                           select new GroupedErrorsDTO
-                                           {
-                                               Message = errGroup.Key.Message,
-                                               Batch = errGroup.Key.Batch,
-                                               BatchId = errGroup.Key.BatchId,
-                                               Task = errGroup.Key.Task,
-                                               TaskId = errGroup.Key.TaskId,
-                                               Count = errGroup.Count()
-                                           };
-
-            var res = await gbaGroupedByErrorMessage.ToListAsync();
-            foreach (var groupedErrorsDto in res)
+            foreach (var groupedErrorsDto in gbaByDateAndErrorType)
             {
                 var match = _defectContext.Defects.FirstOrDefault(def =>
                     def.Desc == groupedErrorsDto.Message &&
@@ -71,38 +53,37 @@ namespace ReporterConsole.DAOs
                     def.TaskId == groupedErrorsDto.TaskId);
                 groupedErrorsDto.DefectNo = match?.DefectNumber;
             }
-
+            var res = await gbaByDateAndErrorType.ToListAsync();
             return res;
         }
 
         public async Task<List<TaskListDto>> GetTaskList()
         {
 
-            var gbaJoinTasksAndBatches = from gbajoin in _db.GBatchAudit
-                                         join task1 in _db.TTask on gbajoin.TaskId equals task1.TaskId
-                                         join batch1 in _db.TBatch on gbajoin.BatchId equals batch1.BatchId
-                                         where gbajoin.EntryTime >= ReporterArgs.FromDate &&
-                                               gbajoin.EntryTime <= ReporterArgs.ToDate &&
-                                               gbajoin.EntryType == 1
-                                         orderby gbajoin.EntryTime
+            var gbaResult = from gba in _db.GBatchAudit
+                                         where gba.EntryTime >= ReporterArgs.FromDate &&
+                                               gba.EntryTime <= ReporterArgs.ToDate &&
+                                               gba.EntryType == 1 &&
+                                               gba.TaskId != 0
+                                         orderby gba.EntryTime
                                          select new
                                          {
-                                             gbajoin.EntryTime,
-                                             gbajoin.BatchRunNum,
-                                             task1.TaskId,
-                                             task1.TaskName,
-                                             batch1.BatchId,
-                                             batch1.BatchName
+                                             gba.EntryTime,
+                                             gba.BatchRunNum,
+                                             gba.TaskId,
+                                             gba.Task.TaskName,
+                                             gba.BatchId,
+                                             gba.Batch.BatchName
                                          };
 
-            var gbaGroupedByErrorMessage = from gbaJoin in gbaJoinTasksAndBatches
-                                           group gbaJoin by new
+            var gbaGroupedByErrorMessage = from gbaGroup in gbaResult
+                                           group gbaGroup by new
                                            {
-                                               gbaJoin.BatchRunNum,
-                                               Task = gbaJoin.TaskName,
-                                               TaskId = gbaJoin.TaskId,
-                                               Batch = gbaJoin.BatchName,
-                                               BatchId = gbaJoin.BatchId,
+                                               gbaGroup.BatchRunNum,
+                                               Task = gbaGroup.TaskName,
+                                               TaskId = gbaGroup.TaskId,
+                                               Batch = gbaGroup.BatchName,
+                                               BatchId = gbaGroup.BatchId,
                                            } into taskBatchGroup
 
                                            select new TaskListDto
@@ -124,14 +105,12 @@ namespace ReporterConsole.DAOs
         {
             var q =
                 from gba in _db.GBatchAudit
-                join tTask in _db.TTask on gba.TaskId equals tTask.TaskId
-                join tBatch in _db.TBatch on gba.BatchId equals tBatch.BatchId
                 where gba.EntryTime > ReporterArgs.FromDate &&
                       gba.EntryTime < ReporterArgs.ToDate &&
                       gba.EntryType == 3 &&
                       (gba.Description.Contains("completed , reached") || gba.BatchId == 168)
 
-                group gba by new { tTask.TaskName, tBatch.BatchName, gba.BatchRunNum }
+                group gba by new { gba.Task.TaskName, gba.Batch.BatchName, gba.BatchRunNum }
                 into grouped
                 select new RunStatsDto
                 {
@@ -149,8 +128,6 @@ namespace ReporterConsole.DAOs
         {
 
             var q = from gba in _db.GBatchAudit
-                    join tt in _db.TTask on gba.TaskId equals tt.TaskId
-                    join tb in _db.TBatch on gba.BatchId equals tb.BatchId
                     where
                         gba.EntryTime > ReporterArgs.FromDate &&
                         gba.EntryTime < ReporterArgs.ToDate &&
@@ -161,10 +138,10 @@ namespace ReporterConsole.DAOs
                         Message = gba.Description,
                         EntityType = gba.PrimaryKeyType,
                         EntityId = gba.PrimaryKey,
-                        Batch = tb.BatchName,
-                        BatchId = tb.BatchId,
-                        Task = tt.TaskName,
-                        TaskId = tt.TaskId,
+                        Batch = gba.Batch.BatchName,
+                        BatchId = gba.BatchId,
+                        Task = gba.Task.TaskName,
+                        TaskId = gba.TaskId,
                         BatchRunNumber = gba.BatchRunNum
                     };
             return await q.OrderBy(o => o.Message).ToListAsync();

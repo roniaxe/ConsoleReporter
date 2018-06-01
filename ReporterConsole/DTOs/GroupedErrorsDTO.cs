@@ -8,9 +8,9 @@ namespace ReporterConsole.DTOs
     {
         public string Message { get; set; }
         public string Batch { get; set; }
-        public int BatchId { get; set; }
+        public int? BatchId { get; set; }
         public string Task { get; set; }
-        public int TaskId { get; set; }
+        public int? TaskId { get; set; }
         public int Count { get; set; }
         public string DefectNo { get; set; }
     }

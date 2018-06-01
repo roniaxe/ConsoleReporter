@@ -54,12 +54,16 @@ namespace ReporterConsole
             services.AddTransient<IReportCreator<DataTable>, NpoiReportCreator>();
             services.AddLogging(builder =>
             {
-                builder.SetMinimumLevel(LogLevel.Trace);
+                builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddConsole();
-                builder.AddDebug();
+                //builder.AddDebug();
             });
             services.AddSingleton<IConfigurationRoot>(Configuration);
-            services.AddDbContext<AlisUatContext>(builder => builder.UseSqlServer(ConnectionString));
+            services.AddDbContext<AlisUatContext>(builder =>
+            {
+                builder.UseSqlServer(ConnectionString);
+                builder.EnableSensitiveDataLogging();
+            });
             services.AddDbContext<DefectContext>(builder => builder.UseSqlite($@"Data Source={AppContext.BaseDirectory}\defects.db"));
             services.AddScoped<IBatchAuditRepository, BatchAuditRepo>();
         }

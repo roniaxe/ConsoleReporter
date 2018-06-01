@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ReporterConsole.Models
 {
     public partial class TBatch
     {
+        [Key]
         public int BatchId { get; set; }
         public string BatchName { get; set; }
         public short Status { get; set; }
