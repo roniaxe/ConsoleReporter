@@ -17,9 +17,9 @@ namespace ReporterConsole.Models
         public int? Reference { get; set; }
         public int? BatchRunNum { get; set; }
         public int? BatchId { get; set; }
-        public TBatch Batch { get; set; }
+        public virtual TBatch Batch { get; set; }
         public int? TaskId { get; set; }
-        public TTask Task { get; set; }
+        public virtual TTask Task { get; set; }
         public int? ErrorNo { get; set; }
         public string Description { get; set; }
         public int? AssignedTeamNo { get; set; }

@@ -61,6 +61,7 @@ namespace ReporterConsole
             services.AddSingleton<IConfigurationRoot>(Configuration);
             services.AddDbContext<AlisUatContext>(builder =>
             {
+                builder.UseLazyLoadingProxies();
                 builder.UseSqlServer(ConnectionString);
                 builder.EnableSensitiveDataLogging();
             });

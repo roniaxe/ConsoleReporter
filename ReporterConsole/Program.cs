@@ -53,13 +53,7 @@ namespace ReporterConsole
                 .CreateLogger<Program>();
 
             // Check Date
-            if (DateTime.Today > new DateTime(2018, 06, 25))
-            {
-                logger.LogError("Error Loading Settings..");
-                Console.WriteLine("Error Loading Settings..");
-                Environment.ExitCode = -1;
-                return;
-            }
+            
 
             logger.LogInformation($@"From Date: {ReporterArgs.FromDate}, To Date: {ReporterArgs.ToDate}");
 

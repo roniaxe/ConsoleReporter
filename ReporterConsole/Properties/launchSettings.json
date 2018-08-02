@@ -2,7 +2,7 @@
   "profiles": {
     "ReporterConsole": {
       "commandName": "Project",
-      "commandLineArgs": "create -f 2018-05-17 -t 2018-05-18 -e \"Production\"",
+      "commandLineArgs": "create -f 2018-06-28 -t 2018-06-29",
       "environmentVariables": {
         "MY_TEST": "123",
         "ASPNETCORE_ENVIRONMENT": "Development"

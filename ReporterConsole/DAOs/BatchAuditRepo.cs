@@ -23,7 +23,8 @@ namespace ReporterConsole.DAOs
 
         public async Task<List<GroupedErrorsDTO>> GetErrorGroups()
         {
-            var gbaByDateAndErrorType = from gba in _db.GBatchAudit
+            var gbaByDateAndErrorType = 
+                from gba in _db.GBatchAudit
                 where gba.EntryTime >= ReporterArgs.FromDate &&
                       gba.EntryTime <= ReporterArgs.ToDate &&
                       (gba.EntryType == 5 || gba.EntryType == 6)
@@ -45,7 +46,10 @@ namespace ReporterConsole.DAOs
                     Count = grouping.Count()
                 };
 
-            foreach (var groupedErrorsDto in gbaByDateAndErrorType)
+            
+            var res = await gbaByDateAndErrorType.ToListAsync();
+
+            foreach (var groupedErrorsDto in res)
             {
                 var match = _defectContext.Defects.FirstOrDefault(def =>
                     def.Desc == groupedErrorsDto.Message &&
@@ -53,48 +57,51 @@ namespace ReporterConsole.DAOs
                     def.TaskId == groupedErrorsDto.TaskId);
                 groupedErrorsDto.DefectNo = match?.DefectNumber;
             }
-            var res = await gbaByDateAndErrorType.ToListAsync();
+
             return res;
         }
 
         public async Task<List<TaskListDto>> GetTaskList()
         {
 
-            var gbaResult = from gba in _db.GBatchAudit
-                                         where gba.EntryTime >= ReporterArgs.FromDate &&
-                                               gba.EntryTime <= ReporterArgs.ToDate &&
-                                               gba.EntryType == 1 &&
-                                               gba.TaskId != 0
-                                         orderby gba.EntryTime
-                                         select new
-                                         {
-                                             gba.EntryTime,
-                                             gba.BatchRunNum,
-                                             gba.TaskId,
-                                             gba.Task.TaskName,
-                                             gba.BatchId,
-                                             gba.Batch.BatchName
-                                         };
+            var gbaResult = 
+                from gba in _db.GBatchAudit
+                where gba.EntryTime >= ReporterArgs.FromDate &&
+                      gba.EntryTime <= ReporterArgs.ToDate &&
+                      gba.EntryType == 1 &&
+                      gba.TaskId == 0
+                orderby gba.EntryTime
+                select new
+                {
+                    gba.EntryTime,
+                    gba.BatchRunNum,
+                    gba.TaskId,
+                    gba.Task.TaskName,
+                    gba.BatchId,
+                    gba.Batch.BatchName
+                };
 
-            var gbaGroupedByErrorMessage = from gbaGroup in gbaResult
-                                           group gbaGroup by new
-                                           {
-                                               gbaGroup.BatchRunNum,
-                                               Task = gbaGroup.TaskName,
-                                               TaskId = gbaGroup.TaskId,
-                                               Batch = gbaGroup.BatchName,
-                                               BatchId = gbaGroup.BatchId,
-                                           } into taskBatchGroup
+            var gbaGroupedByErrorMessage =
+                from gbaGroup in gbaResult
+                group gbaGroup by new
+                {
+                    gbaGroup.BatchRunNum,
+                    Task = gbaGroup.TaskName,
+                    TaskId = gbaGroup.TaskId,
+                    Batch = gbaGroup.BatchName,
+                    BatchId = gbaGroup.BatchId,
+                }
+                into taskBatchGroup
 
-                                           select new TaskListDto
-                                           {
-                                               BatchName = taskBatchGroup.Key.Batch,
-                                               BatchId = taskBatchGroup.Key.BatchId,
-                                               TaskName = taskBatchGroup.Key.Task,
-                                               TaskId = taskBatchGroup.Key.TaskId,
-                                               BatchRunNumber = taskBatchGroup.Key.BatchRunNum,
-                                               StartTime = taskBatchGroup.Min(grp => grp.EntryTime)
-                                           };
+                select new TaskListDto
+                {
+                    BatchName = taskBatchGroup.Key.Batch,
+                    BatchId = taskBatchGroup.Key.BatchId,
+                    TaskName = taskBatchGroup.Key.Task,
+                    TaskId = taskBatchGroup.Key.TaskId,
+                    BatchRunNumber = taskBatchGroup.Key.BatchRunNum,
+                    StartTime = taskBatchGroup.Min(grp => grp.EntryTime)
+                };
 
             return await gbaGroupedByErrorMessage.OrderBy(t => t.StartTime).ToListAsync();
 
